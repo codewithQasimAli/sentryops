@@ -1,7 +1,5 @@
 import asyncio
 import time
-from typing import Optional
-
 import httpx
 
 
@@ -36,7 +34,7 @@ class HealthMonitor:
                     "error": None,
                 }
             )
-        except httpx.TimeoutException as exc:
+        except httpx.TimeoutException:
             latency_ms = round((time.monotonic() - start) * 1000, 2)
             result.update(
                 {
