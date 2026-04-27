@@ -44,7 +44,7 @@ sentryops/
 
 ## Progress checklist
 - [x] Day 1: FastAPI app + Dockerfile + docker-compose — COMPLETED
-- [ ] Day 2: GitHub Actions CI/CD pipeline
+- [x] Day 2: GitHub Actions CI/CD pipeline — COMPLETED
 - [ ] Day 3: Terraform AWS infrastructure
 - [ ] Day 4: Prometheus + Grafana dashboards
 - [ ] Day 5: Security scanning (Bandit + Trivy)
@@ -56,6 +56,9 @@ sentryops/
 - Port 8000 conflict with FYP — SentryOps runs on port 8001 on host, 8000 inside container
 - Windows pip.exe blocked by App Control policy — fixed with python -m pip instead of pip
 - Git LF/CRLF warnings on Windows — harmless, ignored
+- Day 2 Run #1: flake8 caught unused import (Optional) and unused variable (exc) — removed both, exit code 0
+- Day 2 Run #2: Smoke test hitting /health — wrong URL, actual route is /api/v1/health — fixed in ci.yml
+- Day 2 Run #3: Docker container crashing at startup (exit code 7) — non-root sentryuser had no access to packages installed in /root/.local — fixed by installing to /deps then copying to /usr/local
 
 ## Interview questions to remember
 - Q: Why FastAPI over Flask? A: Async support, auto API docs at /docs, built-in data validation via Pydantic, production-grade performance used by Uber and Netflix
@@ -63,6 +66,10 @@ sentryops/
 - Q: Why multi-stage Dockerfile? A: Build tools stay in stage 1, only runtime files go to stage 2. Result is smaller image and smaller attack surface.
 - Q: Why run container as non-root user? A: If app is compromised attacker gets limited permissions not root access. Critical in fintech environments.
 - Q: What does docker-compose do? A: Orchestrates multiple containers as one system with shared networking. Single command starts entire stack.
+- Q: What is a CI/CD pipeline? A: Automated sequence of quality gates that run on every push. Code must pass lint, security scan, and build validation before it's considered deployable.
+- Q: What is SAST? A: Static Application Security Testing — scans source code for vulnerabilities without running it. Bandit does this for Python.
+- Q: Why does your pipeline have needs: [lint, security-scan]? A: Job dependency — build only runs if both quality gates pass. Prevents packaging broken or vulnerable code.
+- Q: Why run containers as non-root? A: Limits blast radius if compromised. But you must install dependencies to a system path like /usr/local, not /root/.local, or the non-root user can't access them.
 
 ## Current status
-Day 1 complete. FastAPI app live on port 8001. All 4 monitoring targets healthy. Code pushed to GitHub. Ready for Day 2 — GitHub Actions CI/CD pipeline.
+Day 2 complete. GitHub Actions CI/CD pipeline live. 3 jobs: flake8 lint, Bandit SAST, Docker build + Trivy scan + smoke test. All green on run #4 after fixing 3 real bugs caught by the pipeline itself. Ready for Day 3 — Terraform AWS infrastructure.
