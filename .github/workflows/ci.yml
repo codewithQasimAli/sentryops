@@ -82,6 +82,6 @@ jobs:
         run: |
           docker run -d --name sentryops-test -p 8000:8000 sentryops:latest
           sleep 10
-          curl --retry 5 --retry-delay 3 --retry-connrefused http://localhost:8000/health
+          curl --retry 5 --retry-delay 3 --retry-connrefused http://localhost:8000/api/v1/health
           docker stop sentryops-test
           docker rm sentryops-test
