@@ -21,6 +21,7 @@ services:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     networks:
       - sentryops-network
+    restart: unless-stopped
 
   grafana:
     image: grafana/grafana:latest
@@ -28,8 +29,15 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=sentryops123
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
     networks:
       - sentryops-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
 
 networks:
   sentryops-network:
