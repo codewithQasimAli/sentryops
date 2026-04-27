@@ -11,3 +11,4 @@ venv/
 *.pem
 *.key
 .claude/
+CONTEXT.md
