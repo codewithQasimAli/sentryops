@@ -1,4 +1,16 @@
 services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - sentryops
+    restart: unless-stopped
+    networks:
+      - sentryops-network
+
   sentryops:
     build: .
     ports:
