@@ -1,0 +1,12 @@
+.env
+*.tfstate
+*.tfstate.backup
+.terraform/
+__pycache__/
+*.pyc
+.DS_Store
+venv/
+*.egg-info/
+.terraform.lock.hcl
+*.pem
+*.key
