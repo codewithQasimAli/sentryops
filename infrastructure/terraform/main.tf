@@ -64,7 +64,7 @@ resource "aws_route_table_association" "sentryops_rta" {
 
 resource "aws_instance" "sentryops_ec2" {
   ami                    = var.ami_id
-  instance_type          = "t2.micro"
+  instance_type          = "t3.micro"
   subnet_id              = aws_subnet.sentryops_public_subnet.id
   vpc_security_group_ids = [aws_security_group.sentryops_sg.id]
   key_name               = var.key_name
