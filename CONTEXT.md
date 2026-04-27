@@ -45,7 +45,7 @@ sentryops/
 ## Progress checklist
 - [x] Day 1: FastAPI app + Dockerfile + docker-compose — COMPLETED
 - [x] Day 2: GitHub Actions CI/CD pipeline — COMPLETED
-- [ ] Day 3: Terraform AWS infrastructure
+- [x] Day 3: Terraform AWS infrastructure — COMPLETED
 - [ ] Day 4: Prometheus + Grafana dashboards
 - [ ] Day 5: Security scanning (Bandit + Trivy)
 - [ ] Day 6: NGINX reverse proxy
@@ -59,6 +59,10 @@ sentryops/
 - Day 2 Run #1: flake8 caught unused import (Optional) and unused variable (exc) — removed both, exit code 0
 - Day 2 Run #2: Smoke test hitting /health — wrong URL, actual route is /api/v1/health — fixed in ci.yml
 - Day 2 Run #3: Docker container crashing at startup (exit code 7) — non-root sentryuser had no access to packages installed in /root/.local — fixed by installing to /deps then copying to /usr/local
+- Day 3: Bahrain region me-south-1 timeout — opt-in required, switched to Frankfurt eu-central-1
+- Day 3: Key pair created in wrong region N. Virginia — recreated in eu-central-1
+- Day 3: t2.micro not free tier eligible in Frankfurt — switched to t3.micro
+- Day 3: GHCR token exposed — immediately revoked and regenerated with correct scopes
 
 ## Interview questions to remember
 - Q: Why FastAPI over Flask? A: Async support, auto API docs at /docs, built-in data validation via Pydantic, production-grade performance used by Uber and Netflix
@@ -70,6 +74,10 @@ sentryops/
 - Q: What is SAST? A: Static Application Security Testing — scans source code for vulnerabilities without running it. Bandit does this for Python.
 - Q: Why does your pipeline have needs: [lint, security-scan]? A: Job dependency — build only runs if both quality gates pass. Prevents packaging broken or vulnerable code.
 - Q: Why run containers as non-root? A: Limits blast radius if compromised. But you must install dependencies to a system path like /usr/local, not /root/.local, or the non-root user can't access them.
+- Q: What is Terraform? A: Infrastructure as Code. Describe infrastructure in .tf files instead of clicking AWS Console. Reproducible, version-controlled, one command to create or destroy everything.
+- Q: What is a VPC? A: Your own isolated private network inside AWS. Everything lives inside it.
+- Q: What is user_data? A: Bootstrap script that runs once on first boot. Installs Docker and pulls SentryOps container automatically — zero manual setup after terraform apply.
+- Q: Why t3.micro not t2.micro in Frankfurt? A: Free tier eligible instance types vary by region. eu-central-1 uses t3.micro, not t2.micro.
 
 ## Current status
-Day 2 complete. GitHub Actions CI/CD pipeline live. 3 jobs: flake8 lint, Bandit SAST, Docker build + Trivy scan + smoke test. All green on run #4 after fixing 3 real bugs caught by the pipeline itself. Ready for Day 3 — Terraform AWS infrastructure.
+Day 3 complete. SentryOps live on AWS EC2 Frankfurt eu-central-1. Public IP: 63.183.172.18. URL: http://63.183.172.18:8000/api/v1/health returning healthy. Full Terraform IaC — VPC, subnet, internet gateway, route table, security group, EC2 t3.micro. Ready for Day 4 — Prometheus + Grafana dashboards.
