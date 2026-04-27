@@ -46,7 +46,7 @@ sentryops/
 - [x] Day 1: FastAPI app + Dockerfile + docker-compose — COMPLETED
 - [x] Day 2: GitHub Actions CI/CD pipeline — COMPLETED
 - [x] Day 3: Terraform AWS infrastructure — COMPLETED
-- [ ] Day 4: Prometheus + Grafana dashboards
+- [x] Day 4: Prometheus + Grafana dashboards — COMPLETED
 - [ ] Day 5: Security scanning (Bandit + Trivy)
 - [ ] Day 6: NGINX reverse proxy
 - [ ] Day 7: Final polish + presentation
@@ -63,6 +63,7 @@ sentryops/
 - Day 3: Key pair created in wrong region N. Virginia — recreated in eu-central-1
 - Day 3: t2.micro not free tier eligible in Frankfurt — switched to t3.micro
 - Day 3: GHCR token exposed — immediately revoked and regenerated with correct scopes
+- Day 4: Grafana dashboard JSON wrapped in extra object — Grafana file provisioning expects raw dashboard object, not wrapped in {"dashboard": ...}
 
 ## Interview questions to remember
 - Q: Why FastAPI over Flask? A: Async support, auto API docs at /docs, built-in data validation via Pydantic, production-grade performance used by Uber and Netflix
@@ -78,6 +79,9 @@ sentryops/
 - Q: What is a VPC? A: Your own isolated private network inside AWS. Everything lives inside it.
 - Q: What is user_data? A: Bootstrap script that runs once on first boot. Installs Docker and pulls SentryOps container automatically — zero manual setup after terraform apply.
 - Q: Why t3.micro not t2.micro in Frankfurt? A: Free tier eligible instance types vary by region. eu-central-1 uses t3.micro, not t2.micro.
+- Q: What does Prometheus do? A: Scrapes /metrics endpoint every 15 seconds, stores time-series data. Shows request counts, latencies, memory, CPU over time.
+- Q: What is Grafana? A: Visualization layer — connects to Prometheus and renders graphs. Datasource and dashboards are provisioned from config files in the repo, zero manual setup.
+- Q: What is prometheus-fastapi-instrumentator? A: Middleware library that hooks into FastAPI and automatically measures every request — count, duration, size. No changes to business logic needed.
 
 ## Current status
-Day 3 complete. SentryOps live on AWS EC2 Frankfurt eu-central-1. Public IP: 63.183.172.18. URL: http://63.183.172.18:8000/api/v1/health returning healthy. Full Terraform IaC — VPC, subnet, internet gateway, route table, security group, EC2 t3.micro. Ready for Day 4 — Prometheus + Grafana dashboards.
+Day 4 complete. Prometheus scraping /metrics every 15s. Grafana dashboard live at localhost:3000 showing request rate, avg response time, p50/p95 latency percentiles. Full monitoring stack running via docker-compose. Ready for Day 5 — Security scanning deep dive.
