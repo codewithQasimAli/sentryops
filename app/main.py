@@ -1,5 +1,8 @@
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from prometheus_fastapi_instrumentator import Instrumentator
+import os
 
 from app.api.routes import router
 
@@ -13,13 +16,9 @@ app.include_router(router, prefix="/api/v1")
 
 Instrumentator().instrument(app).expose(app)
 
+static_dir = os.path.join(os.path.dirname(__file__), "static")
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 async def root():
-    return {
-        "service": "SentryOps",
-        "version": "1.0.0",
-        "docs_url": "/docs",
-        "health_url": "/api/v1/health",
-        "metrics_url": "/metrics",
-    }
+    with open(os.path.join(static_dir, "index.html"), "r") as f:
+        return f.read()
