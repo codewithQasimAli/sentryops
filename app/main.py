@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
 from prometheus_fastapi_instrumentator import Instrumentator
 import os
 
@@ -17,6 +16,7 @@ app.include_router(router, prefix="/api/v1")
 Instrumentator().instrument(app).expose(app)
 
 static_dir = os.path.join(os.path.dirname(__file__), "static")
+
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
