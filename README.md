@@ -9,9 +9,11 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## Live
-http://63.183.172.18:8000/api/v1/health
-http://63.183.172.18:8000/docs
-http://63.183.172.18:8000/metrics
+http://63.183.172.18/api/v1/health
+http://63.183.172.18/api/v1/check
+http://63.183.172.18/docs
+http://63.183.172.18/metrics
+http://63.183.172.18/nginx-health
 
 ## Overview
 
