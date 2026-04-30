@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SentryOps — Infrastructure Monitor</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080c10;
+    --surface: #0d1117;
+    --border: #1e2d3d;
+    --green: #39d98a;
+    --green-dim: #1a4d35;
+    --red: #ff4d4d;
+    --red-dim: #4d1a1a;
+    --amber: #f0a500;
+    --text: #cdd9e5;
+    --muted: #6e8090;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    min-height: 100vh;
+    padding: 2rem;
+    background-image:
+      linear-gradient(rgba(30, 45, 61, 0.3) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30, 45, 61, 0.3) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .container { max-width: 900px; margin: 0 auto; }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 3rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo { display: flex; flex-direction: column; gap: 0.4rem; }
+
+  .logo-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: #fff;
+    text-transform: uppercase;
+  }
+
+  .logo-sub {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-family: var(--sans);
+  }
+
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 1rem;
+    border-radius: 2px;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+    text-transform: uppercase;
+    border: 1px solid;
+    transition: all 0.3s;
+  }
+
+  .status-badge.all-good {
+    color: var(--green);
+    border-color: var(--green-dim);
+    background: rgba(57, 217, 138, 0.05);
+  }
+
+  .status-badge.degraded {
+    color: var(--red);
+    border-color: var(--red-dim);
+    background: rgba(255, 77, 77, 0.05);
+  }
+
+  .pulse {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  .section-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    font-family: var(--sans);
+  }
+
+  .targets-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .target-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 80px 100px;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    border-left: 3px solid var(--border);
+    transition: border-left-color 0.3s;
+    animation: slideIn 0.4s ease forwards;
+    opacity: 0;
+  }
+
+  .target-row.healthy { border-left-color: var(--green); }
+  .target-row.unhealthy { border-left-color: var(--red); }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .target-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .target-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .target-dot.healthy { background: var(--green); animation: pulse 3s infinite; }
+  .target-dot.unhealthy { background: var(--red); }
+
+  .target-url {
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+    margin-left: 1.5rem;
+    font-family: var(--sans);
+  }
+
+  .target-code {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .target-latency {
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: center;
+    color: var(--green);
+  }
+
+  .target-latency.slow { color: var(--amber); }
+  .target-latency.error { color: var(--red); }
+
+  .target-status {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-align: right;
+    font-family: var(--sans);
+    font-weight: 500;
+  }
+
+  .target-status.healthy { color: var(--green); }
+  .target-status.unhealthy { color: var(--red); }
+
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    margin-bottom: 2.5rem;
+    overflow: hidden;
+  }
+
+  .summary-cell {
+    background: var(--surface);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .summary-value {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .summary-value.green { color: var(--green); }
+  .summary-value.red { color: var(--red); }
+
+  .summary-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-family: var(--sans);
+  }
+
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .refresh-info {
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-family: var(--sans);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .countdown {
+    color: var(--green);
+    font-family: var(--mono);
+    font-weight: 500;
+  }
+
+  .links {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .links a {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    font-family: var(--sans);
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .links a:hover { color: var(--green); }
+
+  .loading-row {
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+
+  .error-row {
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--red);
+    font-size: 0.8rem;
+    background: rgba(255,77,77,0.05);
+    border: 1px solid var(--red-dim);
+    border-radius: 2px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo">
+      <div class="logo-name">SentryOps</div>
+      <div class="logo-sub">Infrastructure Monitoring Platform</div>
+    </div>
+    <div id="overall-badge" class="status-badge all-good">
+      <div class="pulse"></div>
+      <span id="overall-text">Checking...</span>
+    </div>
+  </header>
+
+  <div class="section-label">Monitored Targets</div>
+  <div class="targets-grid" id="targets-grid">
+    <div class="loading-row">Initializing monitor...</div>
+  </div>
+
+  <div class="section-label">Summary</div>
+  <div class="summary-bar">
+    <div class="summary-cell">
+      <div class="summary-value green" id="healthy-count">—</div>
+      <div class="summary-label">Healthy</div>
+    </div>
+    <div class="summary-cell">
+      <div class="summary-value red" id="unhealthy-count">—</div>
+      <div class="summary-label">Unhealthy</div>
+    </div>
+    <div class="summary-cell">
+      <div class="summary-value" id="avg-latency">—</div>
+      <div class="summary-label">Avg Latency (ms)</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="refresh-info">
+      Auto-refresh in <span class="countdown" id="countdown">30</span>s
+      &nbsp;·&nbsp; Last checked: <span id="last-checked">—</span>
+    </div>
+    <div class="links">
+      <a href="/api/v1/health">Health</a>
+      <a href="/api/v1/check">API</a>
+      <a href="/metrics">Metrics</a>
+      <a href="/docs">Docs</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  let countdown = 30;
+  let countdownTimer;
+
+  function getLatencyClass(ms) {
+    if (ms === null) return 'error';
+    if (ms > 1000) return 'slow';
+    return '';
+  }
+
+  function formatTime(date) {
+    return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  async function fetchTargets() {
+    const grid = document.getElementById('targets-grid');
+    try {
+      const res = await fetch('/api/v1/check');
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+
+      const { summary, results } = data;
+
+      document.getElementById('healthy-count').textContent = summary.healthy;
+      document.getElementById('unhealthy-count').textContent = summary.unhealthy;
+
+      const healthyResults = results.filter(r => r.latency_ms !== null);
+      const avg = healthyResults.length
+        ? Math.round(healthyResults.reduce((s, r) => s + r.latency_ms, 0) / healthyResults.length)
+        : 0;
+      document.getElementById('avg-latency').textContent = avg + 'ms';
+
+      const badge = document.getElementById('overall-badge');
+      const badgeText = document.getElementById('overall-text');
+      if (summary.unhealthy === 0) {
+        badge.className = 'status-badge all-good';
+        badgeText.textContent = 'All Systems Operational';
+      } else {
+        badge.className = 'status-badge degraded';
+        badgeText.textContent = summary.unhealthy + ' Target' + (summary.unhealthy > 1 ? 's' : '') + ' Degraded';
+      }
+
+      document.getElementById('last-checked').textContent = formatTime(new Date());
+
+      grid.innerHTML = '';
+      results.forEach((target, i) => {
+        const isHealthy = target.status === 'healthy';
+        const latencyClass = getLatencyClass(target.latency_ms);
+        const row = document.createElement('div');
+        row.className = 'target-row ' + (isHealthy ? 'healthy' : 'unhealthy');
+        row.style.animationDelay = (i * 80) + 'ms';
+        row.innerHTML = `
+          <div>
+            <div class="target-name">
+              <div class="target-dot ${isHealthy ? 'healthy' : 'unhealthy'}"></div>
+              ${target.name}
+            </div>
+            <div class="target-url">${target.url}</div>
+          </div>
+          <div class="target-code">${target.status_code || '—'}</div>
+          <div class="target-latency ${latencyClass}">${target.latency_ms !== null ? target.latency_ms + 'ms' : 'timeout'}</div>
+          <div class="target-status ${isHealthy ? 'healthy' : 'unhealthy'}">${isHealthy ? 'HEALTHY' : 'UNHEALTHY'}</div>
+        `;
+        grid.appendChild(row);
+      });
+
+    } catch (err) {
+      grid.innerHTML = '<div class="error-row">Failed to reach API — ' + err.message + '</div>';
+      document.getElementById('overall-badge').className = 'status-badge degraded';
+      document.getElementById('overall-text').textContent = 'API Unreachable';
+    }
+  }
+
+  function startCountdown() {
+    clearInterval(countdownTimer);
+    countdown = 30;
+    document.getElementById('countdown').textContent = countdown;
+    countdownTimer = setInterval(() => {
+      countdown--;
+      document.getElementById('countdown').textContent = countdown;
+      if (countdown <= 0) {
+        clearInterval(countdownTimer);
+        fetchTargets().then(startCountdown);
+      }
+    }, 1000);
+  }
+
+  fetchTargets().then(startCountdown);
+</script>
+</body>
+</html>
