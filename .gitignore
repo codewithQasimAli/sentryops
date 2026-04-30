@@ -12,3 +12,4 @@ venv/
 *.key
 .claude/
 CONTEXT.md
+CONTEXT_backup.md
